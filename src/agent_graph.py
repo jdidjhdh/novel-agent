@@ -110,13 +110,26 @@ def route_query_node(state: AgentState):
 
     prompt = f"""判断以下用户问题是否需要查询小说知识库原文来回答。
 
-需要查询的情况：
-- 询问小说剧情、人物设定、武魂/能力、时间线、人物关系等小说相关内容
-- 询问"某某是谁""某某做了什么"等需要原文依据的问题
+需要查询的情况（只要涉及小说内容就选需要）：
+- 询问小说剧情、人物设定、武魂/能力、魂环、时间线、人物关系、事件经过等小说相关内容
+- 询问"某某是谁""某某做了什么""怎么认识"等需要原文依据的问题
 
-不需要查询的情况：
-- 打招呼、闲聊、情绪表达
-- 纯粹的角色扮演对话（如"你好""你今天怎么样"）
+不需要查询的情况（仅限与小说内容无关的日常交流）：
+- 打招呼、闲聊、情绪表达（如"你好""你今天怎么样""再见"）
+- 与小说内容无关的问题（如"你会什么"）
+
+示例：
+问题：你好
+回答：不需要
+
+问题：唐三的武魂是什么
+回答：需要
+
+问题：小舞和小三哥怎么认识的
+回答：需要
+
+问题：今天天气怎么样
+回答：不需要
 
 用户问题：{question}
 
@@ -297,8 +310,8 @@ def generate_node(state: AgentState):
 1. 严格依据【你的角色档案】中的设定扮演，不得违背档案中的出身、经历和性格；若原文片段与角色档案冲突，以角色档案为准
 2. 保持{role}的角色设定和性格特点
 3. {context_note}
-4. 回答情节类问题（认识经过/事件经过/如何发生）时，只陈述检索片段中直接对应的情节；片段中未直接描述的事件不要补充细节，宁可回答"我不太记得这件事了"
-5. 如果原文中没有相关信息，用角色口吻说"我不太记得这件事了"
+4. 回答情节类问题（认识经过/事件经过/如何发生）时，只陈述检索片段中直接对应的情节；片段中未直接描述的事件不要补充细节
+5. 如果原文片段中没有相关信息，且【你的角色档案】中也没有对应设定时，才用角色口吻说"我不太记得这件事了"
 6. 回答自然流畅，符合{role}的说话风格
 
 {context_note}
@@ -421,13 +434,14 @@ def chat(question: str, thread_id: str = "1", role: str = DEFAULT_ROLE):
             {"chunk_id": d.metadata.get("chunk_id", "?"), "content": d.page_content[:200]}
             for d in documents
         ]
-        return answer, citations
+        retrieval_count = final_state.get("retrieval_count", 0)
+        return answer, citations, retrieval_count
     except (LLMInvokeError, RetrievalError) as e:
         logger.error(f"对话失败: {e}")
-        return f"抱歉，出错了：{e.message}\n排查建议：检查Ollama服务是否启动、知识库是否已构建", []
+        return f"抱歉，出错了：{e.message}\n排查建议：检查Ollama服务是否启动、知识库是否已构建", [], 0
     except Exception as e:
         logger.error(f"对话未知异常: {type(e).__name__}: {e}")
-        return f"抱歉，发生未知错误：{type(e).__name__}: {e}", []
+        return f"抱歉，发生未知错误：{type(e).__name__}: {e}", [], 0
 
 
 # ==================== 测试入口 ====================

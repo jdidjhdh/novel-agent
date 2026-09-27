@@ -33,7 +33,7 @@ BUILD_PROGRESS_FILE = str(PROJECT_ROOT / "chroma_db" / "build_progress.json")  #
 # ==================== 模型配置 ====================
 EMBEDDING_MODEL = "Qwen/Qwen3-Embedding-0.6B"
 RERANKER_MODEL  = "BAAI/bge-reranker-v2-m3"
-LLM_MODEL       = "qwen2.5:7b"
+LLM_MODEL       = "qwen3:8b"
 LLM_TEMP        = 0.3
 DEVICE          = "cuda"
 

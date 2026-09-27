@@ -158,8 +158,8 @@ def chat(req: ChatRequest):
     """角色扮演对话接口，对接LangGraph智能体"""
     try:
         from agent_graph import chat as agent_chat
-        answer, citations = agent_chat(req.question, thread_id=req.thread_id, role=req.role)
-        return ChatResponse(answer=answer, role=req.role, citations=citations)
+        answer, citations, retrieval_count = agent_chat(req.question, thread_id=req.thread_id, role=req.role)
+        return ChatResponse(answer=answer, role=req.role, retrieval_count=retrieval_count, citations=citations)
     except (TextLoadError, ModelLoadError, GPUMemoryError, VectorDBError,
             RetrievalError, LLMInvokeError) as e:
         status = exception_to_status(e)
