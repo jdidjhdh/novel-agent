@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+
+# 虚拟环境
+venv/
+.venv/
+env/
+
+# 向量库缓存
+chroma_db/
+chroma.db/
+
+# 模型缓存
+src/model_cache/
+*.bin
+*.safetensors
+
+# 日志文件
+logs/
+*.log
+build_log.txt
+
+# 小说原文（版权原因不入库，运行需自备）
+novel_docs/
+
+# 断点续建进度
+build_progress.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+
+# 配置覆盖
+.env

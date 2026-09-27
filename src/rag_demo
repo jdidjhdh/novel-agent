@@ -1,0 +1,68 @@
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import TextLoader
+from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_ollama import ChatOllama
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+import os
+
+os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
+
+
+text = TextLoader("E:/novel_agent/novel_docs/《斗罗大陆》作者：唐家三少.txt",encoding="GBK").load()
+
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+
+text_split = text_splitter.split_documents(text)
+
+embedding = HuggingFaceEmbeddings(
+    model_name="E:/novel_agent/src/model_cache/models--Qwen--Qwen3-Embedding-0.6B",
+    model_kwargs={"device": "cpu"},
+    encode_kwargs={"normalize_embeddings": True}
+)
+
+
+vectorstore = Chroma.from_documents(
+    documents=text_split,
+    embedding=embedding,
+    persist_directory="./chroma.db"
+)
+
+vectorstore.persist()
+
+retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+
+query = "唐三的武魂是什么？"
+result_docs = retriever.invoke(query)
+
+# 打印检索出来的小说片段
+for idx, doc in enumerate(result_docs):
+    print(f"【片段{idx+1}】")
+    print(doc.page_content)
+    print("-"*50)
+
+llm = ChatOllama(model="qwen2.5:7b",temperature=0)
+
+prompt = ChatPromptTemplate.from_template("""
+你是小说知识库助手，只能依据下面的参考文本回答问题。
+如果参考文本里没有对应的信息，直接回复：知识库未查询到相关设定。严禁编造小说内容。
+
+【参考文本】
+{context}
+
+用户问题：{question}
+"""
+
+)
+
+context = "\n\n".join([doc.page_content for doc in result_docs])
+question = query
+
+# 4. 构建链式调用并执行
+rag_chain = prompt | llm | StrOutputParser()
+answer = rag_chain.invoke({"context": context, "question": question})
+
+print("\n===== 大模型回答 =====")
+print(answer)

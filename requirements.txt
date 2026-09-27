@@ -1,0 +1,34 @@
+# LangChain生态（新版独立集成包，消除langchain-community弃用警告）
+langchain==1.4.1
+langchain-core==1.6.3
+langchain-chroma==1.1.0
+langchain-ollama==1.1.0
+langchain-huggingface==1.2.2
+langchain-text-splitters==1.1.2
+
+# 向量数据库
+chromadb==1.5.9
+
+# 模型推理
+torch==2.5.1
+sentence-transformers==6.0.1
+
+# LangGraph智能体
+langgraph==1.2.11
+
+# 后端
+fastapi==0.141.1
+uvicorn==0.53.0
+
+# 前端
+streamlit==1.64.0
+
+# HTTP请求
+requests==2.34.2
+
+# 中文检索
+rank-bm25==0.2.2
+jieba==0.42.1
+
+# 数据处理（评估脚本用）
+pydantic>=2.0
